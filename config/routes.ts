@@ -38,11 +38,12 @@ export default [
 		component: './RandomUser',
 	},
 	{
-		path: '/oan-tu-ti',
-		name: 'Bai1',
-		component: './OanTuTi',
-		
+		path: '/khoa-hoc',
+		name: 'KhoaHoc',
+		component: './KhoaHoc',
 	},
+
+
 
 	///////////////////////////////////
 	
