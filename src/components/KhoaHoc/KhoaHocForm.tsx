@@ -1,25 +1,35 @@
 import { Modal, Form, Input, InputNumber, Select } from 'antd';
+import { useEffect } from 'react';
 
 export default ({ open, onCancel, onSubmit, initialValues }: any) => {
   const [form] = Form.useForm();
 
+  
+  useEffect(() => {
+    if (open) {
+      if (initialValues) {
+        form.setFieldsValue(initialValues);
+      } else {
+        form.resetFields();
+      }
+    }
+  }, [initialValues, open, form]);
+
   return (
     <Modal
-      title={initialValues ? ' Sửa khóa học' : 'Thêm khóa học'}
+      title={initialValues ? '✏️ Sửa khóa học' : '➕ Thêm khóa học'}
       visible={open}
-      onCancel={onCancel}
+      onCancel={() => {
+        form.resetFields(); 
+        onCancel();
+      }}
       onOk={() => form.submit()}
       okText="Lưu"
       cancelText="Hủy"
       centered
       destroyOnClose
     >
-      <Form
-        form={form}
-        initialValues={initialValues}
-        onFinish={onSubmit}
-        layout="vertical"
-      >
+      <Form form={form} onFinish={onSubmit} layout="vertical">
         {/* NAME */}
         <Form.Item
           name="name"
@@ -43,19 +53,16 @@ export default ({ open, onCancel, onSubmit, initialValues }: any) => {
             options={[
               { label: 'Nguyễn Văn A', value: 'Nguyễn Văn A' },
               { label: 'Trần Thị B', value: 'Trần Thị B' },
-              { label: 'Lê Văn C', value: 'Lê Văn C' },
             ]}
           />
         </Form.Item>
 
-        {/* STUDENTS */}
-        <Form.Item
-          name="students"
-          label="Số học viên"
-          initialValue={0}
-        >
-          <InputNumber min={0} style={{ width: '100%' }} />
-        </Form.Item>
+        {/* STUDENTS - chỉ hiện khi sửa */}
+        {initialValues && (
+          <Form.Item name="students" label="Số học viên">
+            <InputNumber min={0} style={{ width: '100%' }} />
+          </Form.Item>
+        )}
 
         {/* STATUS */}
         <Form.Item
@@ -74,7 +81,7 @@ export default ({ open, onCancel, onSubmit, initialValues }: any) => {
 
         {/* DESCRIPTION */}
         <Form.Item name="description" label="Mô tả">
-          <Input.TextArea rows={4} placeholder="Nhập mô tả..." />
+          <Input.TextArea rows={4} />
         </Form.Item>
       </Form>
     </Modal>

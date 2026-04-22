@@ -11,8 +11,8 @@ import CourseDetail from '@/components/KhoaHoc/KhoaHocDetail';
 
 const Page = ({ KhoaHoc, dispatch }: any) => {
   const [search, setSearch] = useState('');
-  const [teacher, setTeacher] = useState();
-  const [status, setStatus] = useState();
+  const [teacher, setTeacher] = useState<any>();
+  const [status, setStatus] = useState<any>();
 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
@@ -20,20 +20,25 @@ const Page = ({ KhoaHoc, dispatch }: any) => {
 
   let list = KhoaHoc?.list || [];
 
-  // search
-  list = list.filter((c: any) =>
-    c.name.toLowerCase().includes(search.toLowerCase())
-  );
+  // 🔍 SEARCH
+  if (search) {
+    list = list.filter((c: any) =>
+      (c.name || '').toLowerCase().includes(search.toLowerCase())
+    );
+  }
 
-  // filter
+  // 🎯 FILTER
   if (teacher) list = list.filter((c: any) => c.teacher === teacher);
   if (status) list = list.filter((c: any) => c.status === status);
 
+  // ✅ SUBMIT (ADD / UPDATE)
   const submit = async (values: any) => {
     try {
       await dispatch({
         type: editing ? 'KhoaHoc/update' : 'KhoaHoc/add',
-        payload: editing ? { ...editing, ...values } : values,
+        payload: editing
+          ? { ...editing, ...values } // giữ id khi sửa
+          : { ...values, students: 0 }, // thêm mới = 0 học viên
       });
 
       message.success('Lưu thành công');
@@ -44,6 +49,7 @@ const Page = ({ KhoaHoc, dispatch }: any) => {
     }
   };
 
+  // ❌ DELETE
   const remove = async (id: string) => {
     try {
       await dispatch({ type: 'KhoaHoc/remove', payload: id });
@@ -55,43 +61,50 @@ const Page = ({ KhoaHoc, dispatch }: any) => {
 
   return (
     <Card title="📚 Quản lý khóa học">
-      {/* Search */}
+      {/* 🔍 SEARCH */}
       <Input.Search
-        placeholder="Tìm khóa học..."
+        placeholder="Tìm theo tên khóa học..."
+        allowClear
         enterButton="Tìm"
         style={{ width: 350, marginBottom: 10 }}
         onSearch={(value) => setSearch(value)}
+        onChange={(e) => {
+          if (!e.target.value) setSearch('');
+        }}
       />
 
-      {/* Filter */}
+      {/* 🎯 FILTER */}
       <CourseFilter setTeacher={setTeacher} setStatus={setStatus} />
 
-      {/* Button thêm */}
+      {/* ➕ ADD BUTTON */}
       <Button
         type="primary"
         icon={<PlusOutlined />}
         size="large"
         style={{ marginBottom: 15 }}
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setEditing(null);
+          setOpen(true);
+        }}
       >
         Thêm khóa học
       </Button>
 
-      {/* Chart */}
+      {/* 📊 CHART */}
       <CourseChart data={list} />
 
-      {/* Table */}
+      {/* 📋 TABLE */}
       <CourseTable
         data={list}
-        onEdit={(r: any) => {
-          setEditing(r);
+        onEdit={(record: any) => {
+          setEditing(record);
           setOpen(true);
         }}
         onDelete={remove}
         onView={(r: any) => setDetail(r)}
       />
 
-      {/* Form */}
+      {/* 📝 FORM */}
       <CourseForm
         open={open}
         initialValues={editing}
@@ -102,7 +115,7 @@ const Page = ({ KhoaHoc, dispatch }: any) => {
         onSubmit={submit}
       />
 
-      {/* Detail */}
+      {/* 📄 DETAIL */}
       <CourseDetail
         open={!!detail}
         data={detail}
